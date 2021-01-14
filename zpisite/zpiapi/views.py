@@ -6,6 +6,7 @@ from .serializers import *
 from .models import *
 from django.core import serializers
 from .helpers import *
+from .constans import *
 
 
 class TeacherViewSet(viewsets.ModelViewSet):
@@ -42,15 +43,30 @@ def markMessageAsRead(request):
         return HttpResponse(status=200)
 
     except Message.DoesNotExist:
-        return JsonResponse({"message": "Message does not exist"})
+        return JsonResponse({"message": MessageInfo.NOT_EXISTS_MESSAGE})
        
 def acceptInvitation(request):
-    email = request.GET.get('email', '')
-    messageId = request.GET.get('messageId', '')
+    inputEmail = request.GET.get('email', '')
+    inputTeamId = request.GET.get('teamId', '')
 
-    # NOT IMPLEMENTED - WHAT TEAM AM I IN?
-    return JsonResponse({"email": email, 
-                         "messageId": messageId})
+    try:
+        student = Student.objects.get(email=inputEmail)
+        team = Team.objects.get(id=inputTeamId)
+
+        if student.teamId is None:
+            student.teamId = team
+            student.save()
+            return JsonResponse({"teamId": team.id})
+
+        else:
+            return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM,
+                             "message": MessageInfo.HAS_TEAM})
+    except Student.DoesNotExist:
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+                             "message": MessageInfo.NOT_EXISTS_STUDENT})
+    except Team.DoesNotExist:
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
+                                "message": MessageInfo.NOT_EXISTS_TEAM})
 
 def deleteMessage(email, messageId):
     try:
@@ -59,7 +75,7 @@ def deleteMessage(email, messageId):
         return HttpResponse(status=200)
 
     except Message.DoesNotExist:
-        return JsonResponse({"message": "Message does not exist"})
+        return JsonResponse({"message": MessageInfo.NOT_EXISTS_MESSAGE})
 
 def getMessages(email):
     my_messages = Message.objects.filter(toUser=email)
@@ -77,10 +93,24 @@ def manageMessages(request):
     else:
         return deleteMessage(email, messageId)
 
-def leaveTeamStudents(request):
-    email = request.GET.get('email', '')
-    # NOT IMPLEMENTED - DIFFERENCE WITH leaveTeamTeams???
-    return JsonResponse({"email": email})
+def leaveTeam(request):
+    inputEmail = request.GET.get('email', '')
+    
+    try:
+        student = Student.objects.get(email=inputEmail)
+        if student.teamId is not None:
+            if student.isTeamAdmin:
+                return JsonResponse({"message": MessageInfo.IS_TEAM_ADMIN})
+            else:
+                student.teamId = None
+                student.save()
+                return HttpResponse()
+        else:
+            return JsonResponse({"message": MessageInfo.HAS_NO_TEAM})
+
+    except Student.DoesNotExist:
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+                             "message": MessageInfo.NOT_EXISTS_STUDENT})
 
 def getStudents(request):
     all_students = Student.objects.all()
@@ -91,8 +121,12 @@ def getStudents(request):
     return JsonResponse(response, safe=False)
 
 def getStudent(request, inputEmail):
-    student = Student.objects.get(email=inputEmail)
-    return JsonResponse(parseStudentObject(student))
+    try:
+        student = Student.objects.get(email=inputEmail)
+        return JsonResponse(parseStudentObject(student))
+    except Student.DoesNotExist:
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+                                "message": MessageInfo.NOT_EXISTS_STUDENT})
 
 def getTeachers(request):
     all_teachers = Teacher.objects.all()
@@ -112,23 +146,16 @@ def addTeamLecturer(request):
 
         teams_common_teacher = Team.objects.filter(lecturer=teacher)
         if len(teams_common_teacher) >= 3:
-            return JsonResponse({"message": "Teacher has 3 teams already"})
+            return JsonResponse({"message": MessageInfo.TOO_MANY_TEAMS})
         else:
             team.lecturer = teacher
             team.save()
             return HttpResponse(status=200)
 
     except Team.DoesNotExist:
-        return JsonResponse({"message": "Team does not exist"})
+        return JsonResponse({"message": MessageInfo.NOT_EXISTS_TEAM})
     except Teacher.DoesNotExist:
-        return JsonResponse({"message": "Teacher does not exist"})
-
-def leaveTeamTeams(request):
-    email = request.GET.get('email', '')
-    teamId = request.GET.get('teamId', '')
-    # NOT IMPLEMENTED - ADMIN CANT LEAVE TEAM ONLY REMOVE DIFFERENCE WITH leaveTeamStudents???
-    return JsonResponse({"email": email,
-                         "teamId": teamId})
+        return JsonResponse({"message": MessageInfo.NOT_EXISTS_TEACHER})
 
 def removeTeam(request):
     teamId = request.GET.get('teamId', '')
@@ -136,13 +163,13 @@ def removeTeam(request):
         team = Team.objects.get(id=teamId)
         team_students = Student.objects.filter(teamId=team)
         if len(team_students) > 1:
-            return JsonResponse({"message": "Team has multiple members"})
+            return JsonResponse({"message": MessageInfo.HAS_MEMBERS})
         else:
             team.delete()
         return HttpResponse(status=200)
 
     except Team.DoesNotExist:
-        return JsonResponse({"message": "Team does not exist"})
+        return JsonResponse({"message": MessageInfo.NOT_EXISTS_TEAM})
 
 def getAllTeams(request):
     all_teams = Team.objects.all()
@@ -155,16 +182,28 @@ def getAllTeams(request):
 def getTeam(id):
     return JsonResponse(getTeamById(id))
 
-def createTeam(request):
-    id = request.GET.get('id', '')
-    # NOT IMPLEMENTED - ADMIN EMAIL AS USER EMAIL
-    return JsonResponse({"id-post": id})
+def createTeam(studentEmail):
+    try:
+        student = Student.objects.get(email=studentEmail)
+        if student.teamId is not None:
+            return JsonResponse({"id": 0,
+                                 "teamId": student.teamId.id,
+                                "message": MessageInfo.HAS_TEAM})
+        else:
+            team = Team.objects.create(adminEmail=studentEmail)
+            student.isTeamAdmin = True
+            student.save()
+            return JsonResponse({"teamId": team.id})
 
-def manageTeam(request, id):
+    except Student.DoesNotExist:
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+                             "message": MessageInfo.NOT_EXISTS_STUDENT})
+
+def manageTeam(request, param):
     if request.method == 'GET':
-        return getTeam(id)
+        return getTeam(param)
     elif request.method == 'POST':
-        return createTeam(request)
+        return createTeam(param)
 
 
 

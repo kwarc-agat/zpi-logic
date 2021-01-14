@@ -17,17 +17,16 @@ urlpatterns = [
     path('mailbox/accept', views.acceptInvitation),
     path('mailbox', views.manageMessages),
     
-    path('students/leaveTeam', views.leaveTeamStudents),
+    path('students/leaveTeam', views.leaveTeam),
     path('students/<str:inputEmail>/', views.getStudent),
     path('students', views.getStudents),
     
     path('teachers', views.getTeachers),
     
     path('teams/addLecturer', views.addTeamLecturer),
-    path('teams/leaveTeam', views.leaveTeamTeams),
     path('teams/removeTeam', views.removeTeam),
     path('teams', views.getAllTeams),
-    path('teams/<str:id>/', views.manageTeam),
+    path('teams/<str:param>/', views.manageTeam),
 
     #path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
