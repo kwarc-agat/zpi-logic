@@ -60,3 +60,16 @@ class Message(models.Model):
                 str(self.msgLines) + "/" + \
                 str(self.type) + "/" + \
                 str(self.isRead)
+
+class User(models.Model):
+    STUDENT = '0'
+    LECTURER = '1'
+    ACCOUNT_TYPES_CHOICES = [
+        (STUDENT, 'Student'),
+        (LECTURER, 'Lecturer')
+        ]
+    email = models.CharField(max_length=100, primary_key=True)
+    password = models.CharField(max_length=20)
+    accountType = models.CharField(max_length=20,
+                                   choices=ACCOUNT_TYPES_CHOICES,
+                                   default=STUDENT)

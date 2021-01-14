@@ -25,12 +25,24 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all().order_by('id')
     serializer_class = MessageSerializer
 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('email')
+    serializer_class = UserSerializer
+
+
 def confirmPassword(request):
     email = request.GET.get('email', '')
     password = request.GET.get('password', '')
-    # NOT IMPLEMENTED - TABLE NOT CREATED
-    return JsonResponse({"email": email, 
-                         "password": password})
+    try:
+        user = User.objects.get(email=email)
+        if user.password == password:
+            return JsonResponse({"accountType": user.accountType})
+        else:
+            return JsonResponse({"id": ErrorCode.INCORRECT_PASSWORD,
+                                 "message": MessageInfo.INCORRECT_PASSWORD})
+    except User.DoesNotExist:
+        return JsonResponse({"message": MessageInfo.NOT_EXISTS_USER})
+
 
 def markMessageAsRead(request):
     email = request.GET.get('email', '')

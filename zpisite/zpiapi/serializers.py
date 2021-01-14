@@ -21,3 +21,8 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Message
         fields = ('id', 'fromUser', 'toUser', 'subject', 'msgLines', 'type', 'isRead')
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Message
+        fields = ('email', 'password', 'accountType')

@@ -26,3 +26,5 @@ class MessageInfo:
     IS_TEAM_ADMIN = "Team admin cannot leave"
     TOO_MANY_TEAMS = "Lecturer has 3 teams already"
     HAS_MEMBERS = "Team has multiple members"
+
+    INCORRECT_PASSWORD = "Wrong password"
