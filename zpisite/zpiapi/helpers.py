@@ -17,21 +17,39 @@ def getStudentsByTeam(commonTeam):
 
 def getTeamById(teamId):
     team = Team.objects.get(id=teamId)
+    if team.lecturer is not None:
+        lecturer = getTeacherById(team.lecturer.id)
+    else:
+        lecturer = None
     return {
             "id": team.id,
             "topic": team.topic,
             "subject": team.subject,
             "members": getStudentsByTeam(team),
             "adminEmail": team.adminEmail,
-            "lecturer": getTeacherById(team.lecturer.id)
+            "lecturer": lecturer
             }
+def getMessageById(msgId):
+    msg = Message.objects.get(id=msgId)
+    return{
+        "id": msg.id,
+        "from": msg.fromUser,
+        "to": msg.toUser,
+        "subject": msg.subject,
+        "msgLines": [msg.msgLines],
+        "type": int(msg.type),
+        "isRead": msg.isRead
+        }
 
 def parseStudentObject(student):
+    if student.teamId is not None:
+        teamId = student.teamId.id
+    else: teamId = None
     return {"name": student.name,
             "surname": student.surname,
             "email": student.email,
             "index": student.index,
-            "teamId": student.teamId.id,
+            "teamId": teamId,
             "isTeamAdmin": student.isTeamAdmin}
 
 def parseStudentObjectNoTeamId(student):

@@ -27,7 +27,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 def confirmPassword(request):
     email = request.GET.get('email', '')
     password = request.GET.get('password', '')
-
+    # NOT IMPLEMENTED - TABLE NOT CREATED
     return JsonResponse({"email": email, 
                          "password": password})
 
@@ -35,24 +35,39 @@ def markMessageAsRead(request):
     email = request.GET.get('email', '')
     messageId = request.GET.get('messageId', '')
 
-    return JsonResponse({"email": email, 
-                         "messageId": messageId})
+    try:
+        msg = Message.objects.get(toUser=email, id=messageId)
+        msg.isRead = True
+        msg.save()
+        return HttpResponse(status=200)
 
+    except Message.DoesNotExist:
+        return JsonResponse({"message": "Message does not exist"})
+       
 def acceptInvitation(request):
     email = request.GET.get('email', '')
     messageId = request.GET.get('messageId', '')
 
+    # NOT IMPLEMENTED - WHAT TEAM AM I IN?
     return JsonResponse({"email": email, 
                          "messageId": messageId})
 
 def deleteMessage(email, messageId):
+    try:
+        msg = Message.objects.get(toUser=email, id=messageId)
+        msg.delete()
+        return HttpResponse(status=200)
 
-    return JsonResponse({"delete-email": email,
-                         "delete-msgID": messageId})
+    except Message.DoesNotExist:
+        return JsonResponse({"message": "Message does not exist"})
 
 def getMessages(email):
+    my_messages = Message.objects.filter(toUser=email)
+    response = []
+    for msg in my_messages:
+        response.append(getMessageById(msg.id))
 
-    return JsonResponse({"get-email": email})
+    return JsonResponse(response, safe=False)
 
 def manageMessages(request):
     email = request.GET.get('email', '')
@@ -62,10 +77,9 @@ def manageMessages(request):
     else:
         return deleteMessage(email, messageId)
 
-
-def leaveTeam(request):
+def leaveTeamStudents(request):
     email = request.GET.get('email', '')
-
+    # NOT IMPLEMENTED - DIFFERENCE WITH leaveTeamTeams???
     return JsonResponse({"email": email})
 
 def getStudents(request):
@@ -89,23 +103,46 @@ def getTeachers(request):
     return JsonResponse(response, safe=False)
 
 def addTeamLecturer(request):
-    teamId = request.GET.get('teamId', '')
+    inputTeamId = request.GET.get('teamId', '')
+    inputEmail = request.GET.get('email', '')
+    
+    try:
+        team = Team.objects.get(id=inputTeamId)
+        teacher = Teacher.objects.get(email=inputEmail)
+
+        teams_common_teacher = Team.objects.filter(lecturer=teacher)
+        if len(teams_common_teacher) >= 3:
+            return JsonResponse({"message": "Teacher has 3 teams already"})
+        else:
+            team.lecturer = teacher
+            team.save()
+            return HttpResponse(status=200)
+
+    except Team.DoesNotExist:
+        return JsonResponse({"message": "Team does not exist"})
+    except Teacher.DoesNotExist:
+        return JsonResponse({"message": "Teacher does not exist"})
+
+def leaveTeamTeams(request):
     email = request.GET.get('email', '')
-
-    return JsonResponse({"teamId": teamId, 
-                         "email": email})
-
-def leaveTeam(request):
-    email = request.GET.get('email', '')
     teamId = request.GET.get('teamId', '')
-
+    # NOT IMPLEMENTED - ADMIN CANT LEAVE TEAM ONLY REMOVE DIFFERENCE WITH leaveTeamStudents???
     return JsonResponse({"email": email,
                          "teamId": teamId})
 
 def removeTeam(request):
     teamId = request.GET.get('teamId', '')
+    try:
+        team = Team.objects.get(id=teamId)
+        team_students = Student.objects.filter(teamId=team)
+        if len(team_students) > 1:
+            return JsonResponse({"message": "Team has multiple members"})
+        else:
+            team.delete()
+        return HttpResponse(status=200)
 
-    return JsonResponse({"teamId": teamId})
+    except Team.DoesNotExist:
+        return JsonResponse({"message": "Team does not exist"})
 
 def getAllTeams(request):
     all_teams = Team.objects.all()
@@ -120,7 +157,7 @@ def getTeam(id):
 
 def createTeam(request):
     id = request.GET.get('id', '')
-
+    # NOT IMPLEMENTED - ADMIN EMAIL AS USER EMAIL
     return JsonResponse({"id-post": id})
 
 def manageTeam(request, id):
