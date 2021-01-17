@@ -36,7 +36,8 @@ def confirmPassword(request):
     try:
         user = User.objects.get(email=email)
         if user.password == password:
-            return JsonResponse({"accountType": user.accountType})
+            print("Password OK")
+            return JsonResponse({"accountType": int(user.accountType)})
         else:
             return JsonResponse({"id": ErrorCode.INCORRECT_PASSWORD,
                                  "message": MessageInfo.INCORRECT_PASSWORD})
@@ -59,26 +60,40 @@ def markMessageAsRead(request):
        
 def acceptInvitation(request):
     inputEmail = request.GET.get('email', '')
-    inputTeamId = request.GET.get('teamId', '')
-
+    inputMsgId = request.GET.get('messageId', '')
+    
     try:
         student = Student.objects.get(email=inputEmail)
-        team = Team.objects.get(id=inputTeamId)
+        msg = Message.objects.get(id=inputMsgId)
+        team = Team.objects.get(adminEmail=msg.fromUser)
 
         if student.teamId is None:
-            student.teamId = team
-            student.save()
-            return JsonResponse({"teamId": team.id})
+            teamMembers = Student.objects.filter(teamId=team)
+            if len(teamMembers)>=4:
+                return JsonResponse({"id": ErrorCode.TOO_MANY_MEMBERS,
+                             "message": MessageInfo.TOO_MANY_MEMBERS})
+            else:
+                student.teamId = team
+                student.save()
+                responseMsg = Message.objects.create(fromUser=student.email, 
+                                                     toUser=msg.fromUser,
+                                                     subject=MessageInfo.SUBJ_INVITATION,
+                                                     msgLines=MessageInfo.MSG_INVITATION_ACCEPT)
+                return JsonResponse({"teamId": team.id})
 
         else:
             return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM,
                              "message": MessageInfo.HAS_TEAM})
+        
     except Student.DoesNotExist:
         return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
                              "message": MessageInfo.NOT_EXISTS_STUDENT})
     except Team.DoesNotExist:
         return JsonResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
                                 "message": MessageInfo.NOT_EXISTS_TEAM})
+    except Message.DoesNotExist:
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
+                             "message": MessageInfo.NOT_EXISTS_MESSAGE})
 
 def deleteMessage(email, messageId):
     try:
@@ -107,9 +122,9 @@ def manageMessages(request):
 
 def leaveTeam(request):
     inputEmail = request.GET.get('email', '')
-    
     try:
         student = Student.objects.get(email=inputEmail)
+        print(student)
         if student.teamId is not None:
             if student.isTeamAdmin:
                 return JsonResponse({"message": MessageInfo.IS_TEAM_ADMIN})
@@ -169,8 +184,7 @@ def addTeamLecturer(request):
     except Teacher.DoesNotExist:
         return JsonResponse({"message": MessageInfo.NOT_EXISTS_TEACHER})
 
-def removeTeam(request):
-    teamId = request.GET.get('teamId', '')
+def removeTeam(teamId):
     try:
         team = Team.objects.get(id=teamId)
         team_students = Student.objects.filter(teamId=team)
@@ -178,7 +192,7 @@ def removeTeam(request):
             return JsonResponse({"message": MessageInfo.HAS_MEMBERS})
         else:
             team.delete()
-        return HttpResponse(status=200)
+            return HttpResponse(status=200)
 
     except Team.DoesNotExist:
         return JsonResponse({"message": MessageInfo.NOT_EXISTS_TEAM})
@@ -191,19 +205,22 @@ def getAllTeams(request):
 
     return JsonResponse(response, safe=False)
 
-def getTeam(id):
-    return JsonResponse(getTeamById(id))
+def getTeam(email):
+    return JsonResponse(getTeamByUserEmail(email))
 
 def createTeam(studentEmail):
+    print("creating team")
+
     try:
         student = Student.objects.get(email=studentEmail)
         if student.teamId is not None:
-            return JsonResponse({"id": 0,
+            return JsonResponse({"id": ErrorCode.HAS_TEAM,
                                  "teamId": student.teamId.id,
                                 "message": MessageInfo.HAS_TEAM})
         else:
             team = Team.objects.create(adminEmail=studentEmail)
             student.isTeamAdmin = True
+            student.teamId = team
             student.save()
             return JsonResponse({"teamId": team.id})
 
@@ -214,8 +231,10 @@ def createTeam(studentEmail):
 def manageTeam(request, param):
     if request.method == 'GET':
         return getTeam(param)
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
         return createTeam(param)
+    elif request.method == 'DELETE':
+        return removeTeam(param)
 
 
 

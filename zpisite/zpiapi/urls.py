@@ -24,7 +24,6 @@ urlpatterns = [
     path('teachers', views.getTeachers),
     
     path('teams/addLecturer', views.addTeamLecturer),
-    path('teams/removeTeam', views.removeTeam),
     path('teams', views.getAllTeams),
     path('teams/<str:param>/', views.manageTeam),
 

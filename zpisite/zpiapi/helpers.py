@@ -37,6 +37,28 @@ def getTeamById(teamId):
     except Team.DoesNotExist:
         return {"message": MessageInfo.NOT_EXISTS_TEAM}
 
+def getTeamByUserEmail(userEmail):
+    try:
+        student = Student.objects.get(email=userEmail)
+        if student.teamId is not None:
+            team = student.teamId
+            if team.lecturer is not None:
+                lecturer = getTeacherById(team.lecturer.id)
+            else:
+                lecturer = None
+            return {
+                    "id": team.id,
+                    "topic": team.topic,
+                    "subject": team.subject,
+                    "members": getStudentsByTeam(team),
+                    "adminEmail": team.adminEmail,
+                    "lecturer": lecturer
+                    }
+        else:
+            return {"message": MessageInfo.HAS_NO_TEAM}
+    except Team.DoesNotExist:
+        return {"message": MessageInfo.NOT_EXISTS_TEAM}
+
 def getMessageById(msgId):
     try:
         msg = Message.objects.get(id=msgId)
