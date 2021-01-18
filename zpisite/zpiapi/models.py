@@ -28,7 +28,7 @@ class Student(models.Model):
     name = models.CharField(max_length=60)
     surname = models.CharField(max_length=60)
     email = models.CharField(max_length=100)
-    teamId = models.ForeignKey(Team, on_delete=models.CASCADE, blank=True, null=True)
+    teamId = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
     isTeamAdmin = models.BooleanField(default=False)
 
     def __str__(self):
