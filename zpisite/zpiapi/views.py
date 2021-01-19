@@ -89,7 +89,7 @@ def acceptInvitation(request):
                 return JsonResponse({"teamId": team.id})
 
         else:
-            return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM,
+            return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM.value,
                                  "message": MessageInfo.HAS_TEAM},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -144,9 +144,7 @@ def leaveTeam(request):
         print(student)
         if student.teamId is not None:
             if student.isTeamAdmin:
-                return JsonResponse({"id": ErrorCode.IS_TEAM_ADMIN,
-                                     "message": MessageInfo.IS_TEAM_ADMIN},
-                                    status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                return removeTeam(student.teamId.id)
             else:
                 student.teamId = None
                 student.save()
@@ -255,7 +253,8 @@ def createTeam(studentEmail):
     try:
         student = Student.objects.get(email=studentEmail)
         if student.teamId is not None:
-            return JsonResponse({"id": ErrorCode.HAS_TEAM,
+            err_id = ErrorCode.ERR_STUDENT_HAS_TEAM
+            return JsonResponse({"id": err_id,
                                  "teamId": student.teamId.id,
                                  "message": MessageInfo.HAS_TEAM},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
