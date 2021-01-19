@@ -111,7 +111,7 @@ def deleteMessage(email, messageId):
     try:
         msg = Message.objects.get(toUser=email, id=messageId)
         msg.delete()
-        return JsonResponse(status=status.HTTP_200_OK)
+        return HttpResponse(status=status.HTTP_200_OK)
 
     except Message.DoesNotExist:
         return JsonResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
