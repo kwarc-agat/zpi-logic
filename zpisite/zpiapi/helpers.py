@@ -60,8 +60,8 @@ def getTeamByUserEmail(userEmail):
             }
         else:
             return {"message": MessageInfo.HAS_NO_TEAM}
-    except Team.DoesNotExist:
-        return {"message": MessageInfo.NOT_EXISTS_TEAM}
+    except Student.DoesNotExist:
+        return {"message": MessageInfo.NOT_EXISTS_STUDENT}
 
 
 def getMessageById(msgId):

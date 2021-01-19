@@ -50,7 +50,6 @@ def confirmPassword(request):
 def markMessageAsRead(request):
     email = request.GET.get('email', '')
     messageId = request.GET.get('messageId', '')
-
     try:
         msg = Message.objects.get(toUser=email, id=messageId)
         msg.isRead = True
@@ -89,7 +88,7 @@ def acceptInvitation(request):
                 return JsonResponse({"teamId": team.id})
 
         else:
-            return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM.value,
+            return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM,
                                  "message": MessageInfo.HAS_TEAM},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -118,7 +117,7 @@ def deleteMessage(email, messageId):
                              "message": MessageInfo.NOT_EXISTS_MESSAGE},
                             status=status.HTTP_404_NOT_FOUND)
 
-
+#tested
 def getMessages(email):
     my_messages = Message.objects.filter(toUser=email)
     response = []
@@ -141,7 +140,7 @@ def leaveTeam(request):
     inputEmail = request.GET.get('email', '')
     try:
         student = Student.objects.get(email=inputEmail)
-        print(student)
+
         if student.teamId is not None:
             if student.isTeamAdmin:
                 return removeTeam(student.teamId.id)
@@ -159,7 +158,7 @@ def leaveTeam(request):
                              "message": MessageInfo.NOT_EXISTS_STUDENT},
                             status=status.HTTP_404_NOT_FOUND)
 
-
+#tested
 def getStudents(request):
     all_students = Student.objects.all()
     response = []
@@ -167,7 +166,6 @@ def getStudents(request):
         response.append(parseStudentObject(student))
 
     return JsonResponse(response, safe=False)
-
 
 def getStudent(request, inputEmail):
     try:
@@ -178,7 +176,7 @@ def getStudent(request, inputEmail):
                              "message": MessageInfo.NOT_EXISTS_STUDENT},
                             status=status.HTTP_404_NOT_FOUND)
 
-
+#tested
 def getTeachers(request):
     all_teachers = Teacher.objects.all()
     response = []
@@ -233,7 +231,7 @@ def removeTeam(teamId):
                              "message": MessageInfo.NOT_EXISTS_TEAM},
                             status=status.HTTP_404_NOT_FOUND)
 
-
+#tested
 def getAllTeams(request):
     all_teams = Team.objects.all()
     response = []
@@ -248,8 +246,6 @@ def getTeam(email):
 
 
 def createTeam(studentEmail):
-    print("creating team")
-
     try:
         student = Student.objects.get(email=studentEmail)
         if student.teamId is not None:
