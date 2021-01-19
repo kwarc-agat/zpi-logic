@@ -22,7 +22,8 @@ urlpatterns = [
     path('students', views.getStudents),
     
     path('teachers', views.getTeachers),
-    
+    path('teachers/<str:inputEmail>/', views.getTeacherByEmail),
+
     path('teams/addLecturer', views.addTeamLecturer),
     path('teams', views.getAllTeams),
     path('teams/<str:param>/', views.manageTeam),
