@@ -223,6 +223,9 @@ def removeTeam(teamId):
                                  "message": MessageInfo.HAS_MEMBERS},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         else:
+            admin_student: Student = Student.objects.get(email=team.adminEmail)
+            admin_student.isTeamAdmin = False
+            admin_student.save()
             team.delete()
             return HttpResponse(status=status.HTTP_200_OK)
 
