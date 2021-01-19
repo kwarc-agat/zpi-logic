@@ -1,11 +1,7 @@
-from django.shortcuts import render
 from rest_framework import viewsets, status
-from rest_framework.response import Response
 from django.http import JsonResponse, HttpResponse
 
 from .serializers import *
-from .models import *
-from django.core import serializers
 from .helpers import *
 from .constans import *
 
@@ -62,7 +58,7 @@ def markMessageAsRead(request):
         return HttpResponse(status=200)
 
     except Message.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
                              "message": MessageInfo.NOT_EXISTS_MESSAGE},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -79,7 +75,7 @@ def acceptInvitation(request):
         if student.teamId is None:
             teamMembers = Student.objects.filter(teamId=team)
             if len(teamMembers) >= 4:
-                return HttpResponse({"id": ErrorCode.TOO_MANY_MEMBERS,
+                return JsonResponse({"id": ErrorCode.TOO_MANY_MEMBERS,
                                      "message": MessageInfo.TOO_MANY_MEMBERS},
                                     status=status.HTTP_405_METHOD_NOT_ALLOWED)
             else:
@@ -93,20 +89,20 @@ def acceptInvitation(request):
                 return JsonResponse({"teamId": team.id})
 
         else:
-            return HttpResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM,
+            return JsonResponse({"id": ErrorCode.ERR_STUDENT_HAS_TEAM,
                                  "message": MessageInfo.HAS_TEAM},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     except Student.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
                              "message": MessageInfo.NOT_EXISTS_STUDENT},
                             status=status.HTTP_404_NOT_FOUND)
     except Team.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
                              "message": MessageInfo.NOT_EXISTS_TEAM},
                             status=status.HTTP_404_NOT_FOUND)
     except Message.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
                              "message": MessageInfo.NOT_EXISTS_MESSAGE},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -115,10 +111,10 @@ def deleteMessage(email, messageId):
     try:
         msg = Message.objects.get(toUser=email, id=messageId)
         msg.delete()
-        return HttpResponse(status=status.HTTP_200_OK)
+        return JsonResponse(status=status.HTTP_200_OK)
 
     except Message.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_MESSAGE,
                              "message": MessageInfo.NOT_EXISTS_MESSAGE},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -148,7 +144,7 @@ def leaveTeam(request):
         print(student)
         if student.teamId is not None:
             if student.isTeamAdmin:
-                return HttpResponse({"id": ErrorCode.IS_TEAM_ADMIN,
+                return JsonResponse({"id": ErrorCode.IS_TEAM_ADMIN,
                                      "message": MessageInfo.IS_TEAM_ADMIN},
                                     status=status.HTTP_405_METHOD_NOT_ALLOWED)
             else:
@@ -156,12 +152,12 @@ def leaveTeam(request):
                 student.save()
                 return HttpResponse(status=status.HTTP_200_OK)
         else:
-            return HttpResponse({"id": ErrorCode.HAS_NO_TEAM,
+            return JsonResponse({"id": ErrorCode.HAS_NO_TEAM,
                                  "message": MessageInfo.HAS_NO_TEAM},
                                 status=status.HTTP_404_NOT_FOUND)
 
     except Student.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
                              "message": MessageInfo.NOT_EXISTS_STUDENT},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -180,7 +176,7 @@ def getStudent(request, inputEmail):
         student = Student.objects.get(email=inputEmail)
         return JsonResponse(parseStudentObject(student))
     except Student.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
                              "message": MessageInfo.NOT_EXISTS_STUDENT},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -204,7 +200,7 @@ def addTeamLecturer(request):
 
         teams_common_teacher = Team.objects.filter(lecturer=teacher)
         if len(teams_common_teacher) >= 3:
-            return HttpResponse({"id": ErrorCode.TOO_MANY_TEAMS,
+            return JsonResponse({"id": ErrorCode.TOO_MANY_TEAMS,
                                  "message": MessageInfo.TOO_MANY_TEAMS},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         else:
@@ -213,11 +209,11 @@ def addTeamLecturer(request):
             return HttpResponse(status=status.HTTP_200_OK)
 
     except Team.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
                              "message": MessageInfo.NOT_EXISTS_TEAM},
                             status=status.HTTP_404_NOT_FOUND)
     except Teacher.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_TEACHER,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_TEACHER,
                              "message": MessageInfo.NOT_EXISTS_TEACHER},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -227,7 +223,7 @@ def removeTeam(teamId):
         team = Team.objects.get(id=teamId)
         team_students = Student.objects.filter(teamId=team)
         if len(team_students) > 1:
-            return HttpResponse({"id": ErrorCode.HAS_MEMBERS,
+            return JsonResponse({"id": ErrorCode.HAS_MEMBERS,
                                  "message": MessageInfo.HAS_MEMBERS},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         else:
@@ -235,7 +231,7 @@ def removeTeam(teamId):
             return HttpResponse(status=status.HTTP_200_OK)
 
     except Team.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_TEAM,
                              "message": MessageInfo.NOT_EXISTS_TEAM},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -259,7 +255,7 @@ def createTeam(studentEmail):
     try:
         student = Student.objects.get(email=studentEmail)
         if student.teamId is not None:
-            return HttpResponse({"id": ErrorCode.HAS_TEAM,
+            return JsonResponse({"id": ErrorCode.HAS_TEAM,
                                  "teamId": student.teamId.id,
                                  "message": MessageInfo.HAS_TEAM},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -271,7 +267,7 @@ def createTeam(studentEmail):
             return JsonResponse({"teamId": team.id})
 
     except Student.DoesNotExist:
-        return HttpResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
+        return JsonResponse({"id": ErrorCode.NOT_EXISTS_STUDENT,
                              "message": MessageInfo.NOT_EXISTS_STUDENT},
                             status=status.HTTP_404_NOT_FOUND)
 
