@@ -23,3 +23,9 @@ Run your server:
 Try it out in browser:
 
     http://localhost:8000/teachers
+    
+To run unit tests:
+
+    python manage.py test
+    
+    
