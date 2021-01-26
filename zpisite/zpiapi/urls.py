@@ -27,6 +27,7 @@ urlpatterns = [
     path('teams/addLecturer', views.addTeamLecturer, name='teamsAddLecturer'),
     path('teams', views.getAllTeams, name='teams'),
     path('teams/<str:param>/', views.manageTeam, name='teamsManage'),
+    path('teams/invite', views.inviteToTeam, name='teamsManage'),
 
     #path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'), name='teachers'),

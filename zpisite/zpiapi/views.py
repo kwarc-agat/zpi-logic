@@ -84,7 +84,7 @@ def acceptInvitation(request):
                 responseMsg = Message.objects.create(fromUser=student.email,
                                                      toUser=msg.fromUser,
                                                      subject=MessageInfo.SUBJ_INVITATION,
-                                                     msgLines=MessageInfo.MSG_INVITATION_ACCEPT)
+                                                     msgLines='Student '+inputEmail+' zaakceptował zaproszenie do zespołu')
                 return JsonResponse({"teamId": team.id})
 
         else:
@@ -135,6 +135,13 @@ def manageMessages(request):
     else:
         return deleteMessage(email, messageId)
 
+def inviteToTeam(request):
+    teamId = request.GET.get('teamId', '')
+    studentEmail = request.GET.get('studentEmail', '')
+    team = Team.objects.get(id=teamId)
+    Message.objects.create(fromUser=team.adminEmail,toUser=studentEmail,subject='Zaproszenie do zespołu',msgLines='Zespół o Id='+teamId+' zaprasza Cię do swojego zespołu',type=1)
+    return HttpResponse(status=status.HTTP_200_OK)
+
 
 def leaveTeam(request):
     inputEmail = request.GET.get('email', '')
@@ -145,6 +152,8 @@ def leaveTeam(request):
             if student.isTeamAdmin:
                 return removeTeam(student.teamId.id)
             else:
+                team=student.teamId
+                Message.objects.create(fromUser='Zpi-admin',toUser=team.adminEmail,subject='Zmiana składu osobowego zespołu',msgLines='Student '+inputEmail+' opuścił zespół')
                 student.teamId = None
                 student.save()
                 return HttpResponse(status=status.HTTP_200_OK)

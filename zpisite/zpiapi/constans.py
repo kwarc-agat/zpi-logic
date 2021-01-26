@@ -15,20 +15,20 @@ class ErrorCode:
 
 
 class MessageInfo:
-    NOT_EXISTS_MESSAGE = "Message does not exist"
-    NOT_EXISTS_STUDENT = "Student does not exist"
-    NOT_EXISTS_TEACHER = "Teacher does not exist"
-    NOT_EXISTS_TEAM = "Team does not exist"
-    NOT_EXISTS_USER = "User does not exist"
+    NOT_EXISTS_MESSAGE = "Nie ma takiej wiadomości"
+    NOT_EXISTS_STUDENT = "Taki student nie istnieje"
+    NOT_EXISTS_TEACHER = "Taki prowadzący nie istnieje"
+    NOT_EXISTS_TEAM = "Taki zespół nie istnieje"
+    NOT_EXISTS_USER = "Użytkownik nie istnieje"
 
-    HAS_TEAM = "Student has team"
-    HAS_NO_TEAM = "Student does not have team"
-    IS_TEAM_ADMIN = "Team admin cannot leave"
-    TOO_MANY_TEAMS = "Lecturer has 3 teams already"
-    HAS_MEMBERS = "Team has multiple members"
-    TOO_MANY_MEMBERS = "Team has 4 members already"
+    HAS_TEAM = "Student ma już zespół"
+    HAS_NO_TEAM = "Student nie ma zespołu"
+    IS_TEAM_ADMIN = "Admin nie może opuścić zespołu"
+    TOO_MANY_TEAMS = "Opiekun ma już 3 zespoły"
+    HAS_MEMBERS = "Nie można wykonać - zespół na członków"
+    TOO_MANY_MEMBERS = "Zespół ma już 4 członków"
 
-    INCORRECT_PASSWORD = "Wrong password"
+    INCORRECT_PASSWORD = "Niewłaściwe hasło"
 
     SUBJ_INVITATION = "Rozpatrzenie zaproszenie"
     MSG_INVITATION_ACCEPT = "Użytkownik zaakceptował zaproszenie"
