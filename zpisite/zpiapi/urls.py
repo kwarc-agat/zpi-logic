@@ -13,21 +13,23 @@ urlpatterns = [
     
     path('auth', views.confirmPassword),
 
-    path('mailbox/markReaded', views.markMessageAsRead),
-    path('mailbox/accept', views.acceptInvitation),
-    path('mailbox', views.manageMessages),
+    path('mailbox/markReaded', views.markMessageAsRead, name='mailboxMarkReaded'),
+    path('mailbox/accept', views.acceptInvitation, name='mailboxAccept'),
+    path('mailbox', views.manageMessages, name='mailbox'),
     
-    path('students/leaveTeam', views.leaveTeam),
-    path('students/<str:inputEmail>/', views.getStudent),
-    path('students', views.getStudents),
+    path('students/leaveTeam', views.leaveTeam, name='studentsLeaveTeam'),
+    path('students/<str:inputEmail>/', views.getStudent, name='getStudent'),
+    path('students', views.getStudents, name='students'),
     
-    path('teachers', views.getTeachers),
-    
-    path('teams/addLecturer', views.addTeamLecturer),
-    path('teams', views.getAllTeams),
-    path('teams/<str:param>/', views.manageTeam),
+    path('teachers', views.getTeachers, name='teachers'),
+    path('teachers/<str:inputEmail>/', views.getTeacherByEmail, name='getTeacher'),
+
+    path('teams/addLecturer', views.addTeamLecturer, name='teamsAddLecturer'),
+    path('teams', views.getAllTeams, name='teams'),
+    path('teams/<str:param>/', views.manageTeam, name='teamsManage'),
+    path('teams/invite', views.inviteToTeam, name='teamsManage'),
 
     #path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'), name='teachers'),
     
 ]
